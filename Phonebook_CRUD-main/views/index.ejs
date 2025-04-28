@@ -1,0 +1,95 @@
+<!-- include header -->
+<%- include('include/_header') %>
+<!-- /include header -->
+
+<main id="site-main">
+  <div class="container">
+    <div class="box-nav d-flex justify-between">
+      <a href="/add-user">
+        <span class="text-gradient"><i class="fas fa-user-plus"></i> New Contact</span>
+      </a>
+    </div>
+
+    <br>
+
+    <!-- 🔍 Search Form -->
+    <form id="search_form" class="mb-3">
+      <input type="text" id="search_input" placeholder="Search by name" />
+      <button type="submit">Search</button>
+    </form>
+
+    <!-- 📋 Contacts Table -->
+    <table class="table">
+      <thead class="thead-dark">
+        <tr>
+          <th>Id</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Number</th>
+          <th>Gender</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="user_table_body">
+        <%- include('include/_show') %>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<!-- include footer -->
+<%- include('include/_footer') %>
+<!-- /include footer -->
+
+<script>
+  // AJAX delete
+  $(document).on("click", ".delete", function (e) {
+    e.preventDefault();
+    const id = $(this).data("id");
+
+    if (confirm("❗ Do you really want to delete this contact?")) {
+      $.ajax({
+        url: `/api/users/${id}`,
+        method: "DELETE",
+        success: function () {
+          alert("🗑️ Contact deleted successfully!");
+          location.reload();
+        },
+        error: function () {
+          alert("❌ Failed to delete contact.");
+        },
+      });
+    }
+  });
+
+  // AJAX search
+  $("#search_form").submit(function (e) {
+    e.preventDefault();
+    const query = $("#search_input").val().toLowerCase();
+
+    $.get("/api/users", function (users) {
+      const filtered = users.filter((user) =>
+        user.name.toLowerCase().includes(query)
+      );
+
+      let rows = "";
+      filtered.forEach((user, index) => {
+        rows += `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${user.name}</td>
+            <td>${user.email}</td>
+            <td>${user.number}</td>
+            <td>${user.gender}</td>
+            <td>
+              <a href="/update-user?id=${user._id}" class="btn btn-sm btn-primary">Edit</a>
+              <a href="#" class="btn btn-sm btn-danger delete" data-id="${user._id}">Delete</a>
+            </td>
+          </tr>
+        `;
+      });
+
+      $("#user_table_body").html(rows);
+    });
+  });
+</script>

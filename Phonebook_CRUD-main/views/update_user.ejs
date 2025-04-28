@@ -1,0 +1,84 @@
+<!-- include header -->
+<%- include('include/_header') %>
+<!-- /include header -->
+
+<main id="site-main">
+  <div class="container">
+    <div class="box-nav d-flex justify-between">
+      <div class="filter">
+        <a href="/"><i class="fas fa-users"></i> All Contacts</a>
+      </div>
+    </div>
+
+    <div class="form-title text-center">
+      <h2 class="text-dark">Update Contact</h2>
+      <span class="text-light">You are Updating an Existing Contact</span>
+    </div>
+
+    <!-- update form -->
+    <form id="update_user">
+      <input type="hidden" name="id" value="<%= user._id %>">
+      <div class="new_user">
+        <div class="form-group">
+          <label for="name" class="text-light">Name:</label>
+          <input type="text" name="name" value="<%= user.name %>" placeholder="Enter your name" required>
+        </div>
+        <div class="form-group">
+          <label for="email" class="text-light">Email:</label>
+          <input type="email" name="email" value="<%= user.email %>" placeholder="Add Email Id" required>
+        </div>
+        <div class="form-group">
+          <label for="number" class="text-light">Number:</label>
+          <input type="text" name="number" value="<%= user.number %>" placeholder="Add Phone Number" required>
+        </div>
+        <div class="form-group">
+          <label for="gender" class="text-light">Gender:</label>
+          <div class="radio inline">
+            <input type="radio" id="radio-male" name="gender" value="male" <%= user.gender == 'male' ? 'checked' : '' %>>
+            <label for="radio-male" class="radio-label">Male</label>
+          </div>
+          <div class="radio inline">
+            <input type="radio" id="radio-female" name="gender" value="female" <%= user.gender == 'female' ? 'checked' : '' %>>
+            <label for="radio-female" class="radio-label">Female</label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <button class="btn primary" type="submit">Save Contact</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</main>
+
+<!-- include footer -->
+<%- include('include/_footer') %>
+<!-- /include footer -->
+
+<script>
+  // Update form submit using AJAX
+  $("#update_user").submit(function(event) {
+    event.preventDefault();
+
+    var unindexed_array = $(this).serializeArray();
+    var data = {};
+
+    $.map(unindexed_array, function(n, i) {
+      data[n['name']] = n['value'];
+    });
+
+    var request = {
+      url: `http://localhost:3000/api/users/${data.id}`,
+      method: "PUT",
+      data: data
+    };
+
+    $.ajax(request).done(function(response) {
+      alert("✅ Contact updated successfully!");
+      window.location.href = "/";
+    }).fail(function(xhr) {
+      alert("❌ Failed to update contact.");
+      console.error(xhr.responseText);
+    });
+  });
+</script>
