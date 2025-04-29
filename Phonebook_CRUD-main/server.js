@@ -1,35 +1,46 @@
 const express = require('express');
-const dotenv= require('dotenv');
-const morgan= require('morgan');
-const bodyparser= require("body-parser");
-const path= require('path');
-const connectDB= require('./server/database/connection');
+const dotenv = require('dotenv');
+const morgan = require('morgan');
+const bodyparser = require('body-parser');
+const path = require('path');
+const session = require('express-session');  // ✅ Added session
+const connectDB = require('./server/database/connection');
+
 const app = express();
 
-//port and path config
-dotenv.config({path:'config.env'})
-const PORT=process.env.PORT || 8080 
+// 🔹 Load environment variables
+dotenv.config({ path: 'config.env' });
+const PORT = process.env.PORT || 8080;
 
-//logreq in console
+// 🔹 Logger middleware
 app.use(morgan('tiny'));
 
-//mongo connection
+// 🔹 Database connection
 connectDB();
 
-//pass request to body parser
-app.use(bodyparser.urlencoded({extended:true}))
+// 🔹 Body-parser middleware
+app.use(bodyparser.urlencoded({ extended: true }));
+app.use(bodyparser.json());  // <-- Added for JSON support (optional but useful)
 
+// 🔹 Session middleware ✅
+app.use(session({
+    secret: 'yourSecretKey',   // 🔑 Change to a strong secret key
+    resave: false,
+    saveUninitialized: true
+}));
 
-//setview engine
-app.set("view engine","ejs");
+// 🔹 Set view engine
+app.set("view engine", "ejs");
 
+// 🔹 Static assets
+app.use("/css", express.static(path.resolve(__dirname, "assets/css")));
+app.use("/img", express.static(path.resolve(__dirname, "assets/img")));
+app.use("/js", express.static(path.resolve(__dirname, "assets/js")));
 
-app.use("/css",express.static(path.resolve(__dirname,"assets/css")));
-app.use("/img",express.static(path.resolve(__dirname,"assets/img")));
-app.use("/js",express.static(path.resolve(__dirname,"assets/js")));
+// 🔹 Load routers
+app.use('/', require('./server/routes/router'));
 
-
-//load router
-app.use('/',require('./server/routes/router'))
-
-app.listen(PORT,()=>{console.log(`Server is Running on http://localhost:${PORT}`)});
+// 🔹 Start server
+app.listen(PORT, () => {
+    console.log(`🚀 Server running at http://localhost:${PORT}`);
+});

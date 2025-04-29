@@ -5,17 +5,12 @@ const route = express.Router();
 const services = require('../services/render');
 const controller = require('../controller/controller');
 
-// ✅ GET Routes for Rendering Views
-if (services.homeRoutes) route.get('/', services.homeRoutes);
-else console.error("❌ services.homeRoutes is not defined!");
+// ✅ View Routes (Rendering EJS Pages)
+route.get('/', services.homeRoutes);
+route.get('/add-user', services.add_user);
+route.get('/update-user', services.update_user);
 
-if (services.add_user) route.get('/add-user', services.add_user);
-else console.error("❌ services.add_user is not defined!");
-
-if (services.update_user) route.get('/update-user', services.update_user);
-else console.error("❌ services.update_user is not defined!");
-
-// ✅ Login & Register Pages
+// ✅ Authentication Pages
 route.get('/login', (req, res) => {
     res.render('login');
 });
@@ -24,19 +19,44 @@ route.get('/register', (req, res) => {
     res.render('register');
 });
 
-// ✅ Login form submission
-route.post('/login', controller.login);  // <-- FIXED here from `router` to `route`
+route.get('/logout', (req, res) => {
+    if (req.session) {
+        req.session.destroy((err) => {
+            if (err) {
+                console.log('Error destroying session:', err);
+                res.status(500).send('Failed to log out.');
+            } else {
+                res.redirect('/logout-page'); // ✅ Logout page after session destroyed
+            }
+        });
+    } else {
+        res.redirect('/logout-page');
+    }
+});
 
-// ✅ REST API Routes
+// ✅ Logout page view
+route.get('/logout-page', (req, res) => {
+    res.render('logout'); // <-- logout.ejs should exist in your 'views' folder
+});
+
+// ✅ Authentication API
+route.post('/login', controller.login); 
+
+// (Optional) Register API
+if (controller.register) {
+    route.post('/register', controller.register);
+}
+
+// ✅ User CRUD API Routes
 route.post('/api/users', controller.create);
 route.get('/api/users', controller.find);
 route.put('/api/users/:id', controller.update);
 route.delete('/api/users/:id', controller.delete);
 
-// 🔍 Optional Search API
+// 🔍 Search API (optional)
 if (controller.search) {
     route.get('/api/users/search', controller.search);
 }
 
-// ✅ Export at the end
+// ✅ Export the router
 module.exports = route;

@@ -83,7 +83,7 @@ exports.search = (req, res) => {
         return res.status(400).send({ message: "Search query is required" });
     }
 
-    Userdb.find({ name: { $regex: new RegExp(query, 'i') } }) // More readable regex
+    Userdb.find({ name: { $regex: new RegExp(query, 'i') } })
         .then(users => {
             if (!users.length) {
                 return res.status(404).send({ message: "No users found matching the query" });
@@ -97,6 +97,8 @@ exports.search = (req, res) => {
             })
         );
 };
+
+// 🔒 Login Controller
 exports.login = (req, res) => {
     const { name, password } = req.body;
 
@@ -104,8 +106,21 @@ exports.login = (req, res) => {
     const allowedPassword = '123';
 
     if (name === allowedName && password === allowedPassword) {
+        req.session.isLoggedIn = true;   // ✅ Set session
+        req.session.username = name;
         return res.redirect('/');
     } else {
         return res.send(`<script>alert("Invalid credentials"); window.location.href="/login";</script>`);
     }
+};
+
+// 🔓 Logout Controller
+exports.logout = (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            console.log('Session Destroy Error:', err);
+            return res.status(500).send("Unable to logout.");
+        }
+        res.redirect('/login'); // After logout, go to login
+    });
 };

@@ -1,7 +1,7 @@
 exports.login = (req, res) => {
     const { username, password } = req.body;
 
-    const MY_USERNAME = "irshad";
+    const MY_USERNAME = "admin";
     const MY_PASSWORD = "123"; // use a strong password
 
     if (username === MY_USERNAME && password === MY_PASSWORD) {
